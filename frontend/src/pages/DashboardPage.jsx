@@ -1,25 +1,46 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import SmartCityMap from '../components/dashboard/SmartCityMap';
 import MunicipalStatsPanel from '../components/dashboard/MunicipalStatsPanel';
 import ReportHistoryPanel from '../components/dashboard/ReportHistoryPanel';
+import DashboardCharts from '../components/dashboard/DashboardCharts';
+import ReportDetailsModal from '../components/dashboard/ReportDetailsModal';
 import { getReports, initializeMockData } from '../utils/reportStorage';
 
 export default function DashboardPage() {
   const [reports, setReports] = useState([]);
   const [selectedReport, setSelectedReport] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const loadReports = async () => {
+    const loadedReports = await getReports();
+    setReports(loadedReports);
+    
+    if (selectedReport) {
+      const updated = loadedReports.find(r => r.id === selectedReport.id);
+      if (updated) setSelectedReport(updated);
+    }
+  };
 
   useEffect(() => {
-    // Initialize mock data if empty (for MVP purposes)
-    initializeMockData();
+    loadReports();
     
-    // Load reports
-    const loadedReports = getReports();
-    setReports(loadedReports);
+    // Simple polling for real-time dashboard updates (every 10s)
+    const intervalId = setInterval(loadReports, 10000);
+    return () => clearInterval(intervalId);
   }, []);
 
   const handleSelectReport = (report) => {
     setSelectedReport(report);
+  };
+
+  const handleOpenModal = (report) => {
+    setSelectedReport(report);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
   };
 
   return (
@@ -61,11 +82,22 @@ export default function DashboardPage() {
         >
           <ReportHistoryPanel 
             reports={reports} 
-            onSelectReport={handleSelectReport}
+            onSelectReport={handleOpenModal}
             selectedReportId={selectedReport?.id}
           />
         </motion.div>
       </div>
+
+      <DashboardCharts reports={reports} />
+
+      {/* Report Modal */}
+      {isModalOpen && selectedReport && (
+        <ReportDetailsModal 
+          report={selectedReport} 
+          onClose={handleCloseModal}
+          onUpdate={loadReports}
+        />
+      )}
     </div>
   );
 }

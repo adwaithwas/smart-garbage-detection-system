@@ -1,97 +1,133 @@
-// A simple LocalStorage-based service for reports MVP
-export const STORAGE_KEY = 'cleansight_reports';
+const API_BASE_URL = 'http://localhost:8000/api/v1';
 
-export const saveReport = (reportData) => {
+export const uploadImage = async (imageFile) => {
+  const formData = new FormData();
+  formData.append('file', imageFile);
+
+  const response = await fetch(`${API_BASE_URL}/reports/upload`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error('Image upload failed');
+  }
+
+  const data = await response.json();
+  return data.image_url;
+};
+
+export const analyzeImage = async (imageFile) => {
+  const formData = new FormData();
+  formData.append('file', imageFile);
+
+  const response = await fetch(`${API_BASE_URL}/reports/analyze`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error('Image analysis failed');
+  }
+
+  const data = await response.json();
+  return {
+    ...data,
+    coveragePercentage: data.coverage_percentage,
+    totalObjects: data.total_objects,
+    vehicleRecommended: data.vehicle_recommended,
+    annotatedImageUrl: data.annotated_image_url
+  };
+};
+
+export const saveReport = async (reportData, imageFile) => {
   try {
-    const existingReports = getReports();
-    const newReport = {
-      ...reportData,
-      id: `report-${Date.now()}`,
-      timestamp: new Date().toISOString(),
-      status: 'Pending'
-    };
-    
-    // Convert image blob URL to base64 if needed, 
-    // but for this MVP session, we'll keep the blob URL or mock it if it breaks.
-    // NOTE: Blob URLs don't persist across reloads. For a real MVP we'd use base64 or IndexedDB.
-    // For simplicity, we'll mock the image URL if it's a blob.
-    if (newReport.imageUrl && newReport.imageUrl.startsWith('blob:')) {
-      newReport.imageUrl = 'https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?w=800&q=80'; // Mock garbage image for persistence
+    // 1. Upload image to Cloud/Backend Storage
+    let imageUrl = reportData.imageUrl;
+    if (imageFile) {
+      imageUrl = await uploadImage(imageFile);
+    } else if (imageUrl.startsWith('blob:')) {
+      // Fallback if no file is provided but it's a blob
+      imageUrl = 'https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?w=800&q=80';
     }
 
-    const updatedReports = [newReport, ...existingReports];
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedReports));
-    return newReport;
+    const payload = {
+      ...reportData,
+      image_url: imageUrl,
+      // Map frontend camelCase to backend snake_case
+      coverage_percentage: reportData.coveragePercentage,
+      total_objects: reportData.totalObjects,
+      vehicle_recommended: reportData.vehicleRecommended
+    };
+
+    // Remove old camelCase keys
+    delete payload.imageUrl;
+    delete payload.coveragePercentage;
+    delete payload.totalObjects;
+    delete payload.vehicleRecommended;
+    delete payload.timestamp; // Backend sets this
+    delete payload.status; // Backend sets this
+    delete payload.id; // Backend generates this
+
+    const response = await fetch(`${API_BASE_URL}/reports/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to save report');
+    }
+
+    return await response.json();
   } catch (error) {
     console.error("Error saving report:", error);
-    return null;
+    throw error;
   }
 };
 
-export const getReports = () => {
+export const getReports = async () => {
   try {
-    const data = localStorage.getItem(STORAGE_KEY);
-    return data ? JSON.parse(data) : [];
+    const response = await fetch(`${API_BASE_URL}/reports/`);
+    if (!response.ok) throw new Error('Failed to fetch reports');
+    const data = await response.json();
+    
+    // Map backend snake_case back to frontend camelCase for existing UI compatibility
+    return data.map(r => ({
+      ...r,
+      imageUrl: r.image_url,
+      coveragePercentage: r.coverage_percentage,
+      totalObjects: r.total_objects,
+      vehicleRecommended: r.vehicle_recommended
+    }));
   } catch (error) {
     console.error("Error reading reports:", error);
     return [];
   }
 };
 
-export const getReportById = (id) => {
-  const reports = getReports();
-  return reports.find(r => r.id === id);
-};
-
-export const clearReports = () => {
-  localStorage.removeItem(STORAGE_KEY);
-};
-
-// Populate with mock data if empty
-export const initializeMockData = () => {
-  const existing = getReports();
-  if (existing.length === 0) {
-    const mockReports = [
-      {
-        id: 'report-1',
-        imageUrl: 'https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?w=800&q=80',
-        severity: 'High',
-        coveragePercentage: 45.2,
-        totalObjects: 8,
-        vehicleRecommended: 'Heavy Garbage Truck',
-        latitude: 40.7128 + (Math.random() * 0.02 - 0.01),
-        longitude: -74.0060 + (Math.random() * 0.02 - 0.01),
-        address: 'Downtown Metro Station, Sector 4',
-        timestamp: new Date(Date.now() - 3600000).toISOString(),
-        status: 'Pending'
+export const updateReportStatus = async (id, newStatus) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/reports/${id}/status`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
       },
-      {
-        id: 'report-2',
-        imageUrl: 'https://images.unsplash.com/photo-1528323273322-d81458248d40?w=800&q=80',
-        severity: 'Medium',
-        coveragePercentage: 22.5,
-        totalObjects: 4,
-        vehicleRecommended: 'Medium Garbage Van',
-        latitude: 40.7128 + (Math.random() * 0.02 - 0.01),
-        longitude: -74.0060 + (Math.random() * 0.02 - 0.01),
-        address: 'Riverside Park Entrance',
-        timestamp: new Date(Date.now() - 7200000).toISOString(),
-        status: 'In Progress'
-      },
-      {
-        id: 'report-3',
-        imageUrl: 'https://images.unsplash.com/photo-1595278069441-2cf29f8005a4?w=800&q=80',
-        severity: 'Low',
-        coveragePercentage: 8.4,
-        totalObjects: 2,
-        vehicleRecommended: 'Small Utility Vehicle',
-        latitude: 40.7128 + (Math.random() * 0.02 - 0.01),
-        longitude: -74.0060 + (Math.random() * 0.02 - 0.01),
-        address: 'Main Street Plaza',
-        timestamp: new Date(Date.now() - 86400000).toISOString(),
-        status: 'Pending'
-      }
-    ];
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(mockReports));
+      body: JSON.stringify({ status: newStatus }),
+    });
+
+    if (!response.ok) throw new Error('Failed to update status');
+    return true;
+  } catch (error) {
+    console.error("Error updating report:", error);
+    return false;
   }
+};
+
+export const initializeMockData = async () => {
+  // Not needed anymore since we use a real database, 
+  // but kept to prevent breaking existing imports if any.
+  return Promise.resolve();
 };

@@ -8,8 +8,8 @@ import SeverityCard from '../components/ai/SeverityCard';
 import DetectionSummary from '../components/ai/DetectionSummary';
 import VehicleRecommendation from '../components/ai/VehicleRecommendation';
 import LocationStatusCard from '../components/upload/LocationStatusCard';
-import { simulateAIDetection, getVehicleRecommendation } from '../utils/aiSimulation';
-import { saveReport } from '../utils/reportStorage';
+import { getVehicleRecommendation } from '../utils/aiSimulation';
+import { saveReport, analyzeImage } from '../utils/reportStorage';
 
 export default function UploadPage() {
   const navigate = useNavigate();
@@ -35,22 +35,30 @@ export default function UploadPage() {
   };
 
   const handleAnalyze = async () => {
-    if (!imageUrl || isAnalyzing) return;
+    if (!imageFile || isAnalyzing) return;
+    
     setIsAnalyzing(true);
-    const results = await simulateAIDetection(imageDimensions.width, imageDimensions.height);
-    setAnalysisData(results);
-    setIsAnalyzing(false);
-    setHasAnalyzed(true);
+    
+    try {
+      const results = await analyzeImage(imageFile);
+      setAnalysisData(results);
+      // We also update imageUrl to the annotated one if we want to show it, or keep original.
+      // Let's keep original for the canvas but we have results.annotatedImageUrl now.
+      setHasAnalyzed(true);
+    } catch (error) {
+      console.error("Analysis failed:", error);
+      alert("Failed to analyze image with AI.");
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
     const reportData = {
-      imageUrl,
+      imageUrl: analysisData.image_url || imageUrl,
+      annotated_image_url: analysisData.annotatedImageUrl,
       severity: analysisData.severity,
       coveragePercentage: analysisData.coveragePercentage,
       totalObjects: analysisData.totalObjects,
@@ -59,8 +67,14 @@ export default function UploadPage() {
       ...locationData
     };
     
-    saveReport(reportData);
-    navigate('/dashboard');
+    try {
+      await saveReport(reportData, null); // null because it's already uploaded
+      navigate('/dashboard');
+    } catch (error) {
+      console.error("Submission failed:", error);
+      alert("Failed to submit report. Please try again.");
+      setIsSubmitting(false);
+    }
   };
 
   const handleReset = () => {
