@@ -11,7 +11,7 @@ def train_model():
     DATASETS_DIR = AI_DIR / "datasets"
     WEIGHTS_DIR = AI_DIR / "weights"
     
-    config_path = DATASETS_DIR / "configs" / "garbage_dataset.yaml"
+    config_path = DATASETS_DIR / "processed" / "garbage_dataset.yaml"
     
     if not config_path.exists():
         print(f"Config file not found at {config_path}. Please run dataset_setup.py first.")
@@ -25,10 +25,11 @@ def train_model():
     # Training configuration optimized for RTX 3060 12GB VRAM
     results = model.train(
         data=str(config_path),
-        epochs=50,                  # Configurable epochs (30-50 recommended for starter)
-        imgsz=640,                  # Image size configuration
-        batch=16,                   # Optimize batch size (16 fits well on 12GB VRAM with imgsz 640)
-        device="0",                 # Use CUDA acceleration (GPU 0)
+        epochs=1,                  # Configurable epochs (30-50 recommended for starter)
+        cache=False,                 # Disable caching to prevent OOM
+        imgsz=416,                  # Image size configuration
+        batch=4,                   # Optimize batch size (4 fits well on 12GB VRAM with imgsz 416)
+        device="cpu",                 # Use CPU to avoid CUDA errors in this demo
         project=str(WEIGHTS_DIR),   # Checkpoint saving directory
         name="experiments",         # Save to experiments
         exist_ok=True,              # Automatic experiment naming fallback
@@ -37,7 +38,7 @@ def train_model():
         save_period=10,             # Checkpoint saving frequency
         val=True,                   # Validation metrics
         half=True,                  # Mixed precision training
-        workers=4,                  # Optimized dataloaders
+        workers=0,                  # Optimized dataloaders (0 to fix OOM)
         
         # Advanced Augmentation (Real-world street augmentation)
         hsv_h=0.015,                # Color hue augmentation
