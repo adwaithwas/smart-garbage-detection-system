@@ -6,18 +6,20 @@ import { Truck, Car, Route, Clock, Calendar, AlertTriangle, ShieldCheck, Info } 
 import { renderToString } from 'react-dom/server';
 
 // Fix for custom icons using divIcon to avoid default leaflet image path issues
-const createCustomIcon = (severity) => {
+const createCustomIcon = (severity, status) => {
+  const isResolved = status === 'Resolved';
   const colors = {
-    High: { border: 'border-red-500', bg: 'bg-red-500', shadow: 'shadow-[0_0_15px_rgba(239,68,68,0.8)]' },
-    Medium: { border: 'border-amber-500', bg: 'bg-amber-500', shadow: 'shadow-[0_0_15px_rgba(245,158,11,0.8)]' },
-    Low: { border: 'border-emerald-500', bg: 'bg-emerald-500', shadow: 'shadow-[0_0_15px_rgba(16,185,129,0.8)]' }
+    High: { border: 'border-red-500', bg: 'bg-red-500', shadow: isResolved ? '' : 'shadow-[0_0_15px_rgba(239,68,68,0.8)]' },
+    Medium: { border: 'border-amber-500', bg: 'bg-amber-500', shadow: isResolved ? '' : 'shadow-[0_0_15px_rgba(245,158,11,0.8)]' },
+    Low: { border: 'border-emerald-500', bg: 'bg-emerald-500', shadow: isResolved ? '' : 'shadow-[0_0_15px_rgba(16,185,129,0.8)]' }
   };
   const style = colors[severity] || colors.Low;
 
   const html = `
-    <div class="relative w-8 h-8 group">
-      <div class="absolute inset-0 rounded-full ${style.border} border-2 ${style.shadow} animate-pulse bg-slate-900/80"></div>
+    <div class="relative w-8 h-8 group transition-opacity duration-300 ${isResolved ? 'opacity-40 grayscale-[0.5]' : 'opacity-100'}">
+      <div class="absolute inset-0 rounded-full ${style.border} border-2 ${style.shadow} ${isResolved ? '' : 'animate-pulse'} bg-slate-900/80"></div>
       <div class="absolute inset-2 rounded-full ${style.bg}"></div>
+      ${isResolved ? '<div class="absolute -top-1 -right-1 bg-emerald-500 text-white rounded-full p-0.5 shadow-lg"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>' : ''}
     </div>
   `;
 
@@ -71,7 +73,7 @@ export default function SmartCityMap({ reports, selectedLocation }) {
           <Marker 
             key={report.id} 
             position={[report.latitude, report.longitude]}
-            icon={createCustomIcon(report.severity)}
+            icon={createCustomIcon(report.severity, report.status)}
           >
             <Popup className="custom-popup">
               <div className="p-1 w-64 text-slate-200">

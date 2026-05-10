@@ -21,7 +21,7 @@ export default function ReportHistoryPanel({ reports, onSelectReport, selectedRe
           Recent Reports
         </h3>
         <span className="bg-blue-500/20 text-blue-400 text-xs px-2 py-1 rounded-full border border-blue-500/30">
-          {reports.length} Active
+          {reports.filter(r => r.status !== 'Resolved').length} Active
         </span>
       </div>
       
@@ -43,21 +43,35 @@ export default function ReportHistoryPanel({ reports, onSelectReport, selectedRe
                 selectedReportId === report.id 
                   ? 'bg-slate-800 border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.15)]' 
                   : 'bg-slate-800/40 border-slate-700/50 hover:bg-slate-800/80 hover:border-slate-600'
-              }`}
+              } ${report.status === 'Resolved' ? 'opacity-50 grayscale-[0.3]' : 'opacity-100'}`}
             >
               <div className="flex gap-3">
-                <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 border border-slate-700">
+                <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 border border-slate-700 relative">
                   <img src={report.imageUrl} alt="Garbage thumbnail" className="w-full h-full object-cover" />
+                  {report.status === 'Resolved' && (
+                    <div className="absolute inset-0 bg-emerald-500/20 flex items-center justify-center">
+                      <div className="bg-emerald-500 text-white rounded-full p-0.5">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-start mb-1">
-                    <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${
-                      report.severity === 'High' ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
-                      report.severity === 'Medium' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' :
-                      'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                    }`}>
-                      {report.severity}
-                    </span>
+                    <div className="flex gap-1.5 items-center">
+                      <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${
+                        report.severity === 'High' ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
+                        report.severity === 'Medium' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' :
+                        'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                      }`}>
+                        {report.severity}
+                      </span>
+                      {report.status === 'Resolved' && (
+                        <span className="text-[10px] font-bold text-emerald-400 flex items-center gap-0.5">
+                          ✓ Resolved
+                        </span>
+                      )}
+                    </div>
                     <span className="text-xs text-slate-500">{timeAgo(report.timestamp)}</span>
                   </div>
                   <p className="text-sm font-medium text-slate-200 truncate">{report.address}</p>

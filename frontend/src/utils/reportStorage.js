@@ -163,6 +163,20 @@ export const updateReportStatus = async (id, newStatus) => {
   }
 };
 
+export const deleteReport = async (id) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/reports/${id}`, {
+      method: 'DELETE',
+    });
+
+    if (!response.ok) throw new Error('Failed to delete report');
+    return true;
+  } catch (error) {
+    console.error("Error deleting report:", error);
+    return false;
+  }
+};
+
 export const initializeMockData = async () => {
   // Not needed anymore since we use a real database, 
   // but kept to prevent breaking existing imports if any.

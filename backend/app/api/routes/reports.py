@@ -117,3 +117,13 @@ def update_status(report_id: str, status_update: ReportStatusUpdate, db: Session
         det.box = json.loads(det.box_json) if det.box_json else None
         
     return report
+
+@router.delete("/{report_id}")
+def delete_report(report_id: str, db: Session = Depends(get_db)):
+    report = db.query(Report).filter(Report.id == report_id).first()
+    if not report:
+        raise HTTPException(status_code=404, detail="Report not found")
+    
+    db.delete(report)
+    db.commit()
+    return {"status": "success", "message": "Report deleted successfully"}

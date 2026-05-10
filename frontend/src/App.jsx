@@ -4,6 +4,7 @@ import DashboardLayout from './layouts/DashboardLayout';
 import LandingPage from './pages/LandingPage';
 import UploadPage from './pages/UploadPage';
 import DashboardPage from './pages/DashboardPage';
+import LiveMapPage from './pages/LiveMapPage';
 
 function App() {
   return (
@@ -18,8 +19,8 @@ function App() {
         {/* Dashboard Routes */}
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<DashboardPage />} />
-          {/* Placeholders for future routes */}
-          <Route path="map" element={<div className="p-8 text-slate-400">Map View Pending</div>} />
+          {/* Main Operational Routes */}
+          <Route path="map" element={<LiveMapPage />} />
           <Route path="analytics" element={<div className="p-8 text-slate-400">Analytics View Pending</div>} />
           <Route path="settings" element={<div className="p-8 text-slate-400">Settings View Pending</div>} />
         </Route>

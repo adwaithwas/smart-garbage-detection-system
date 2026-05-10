@@ -1,18 +1,33 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, MapPin, AlertTriangle, Truck, Clock, Crosshair, CheckCircle2 } from 'lucide-react';
-import { updateReportStatus } from '../../utils/reportStorage';
+import { X, MapPin, AlertTriangle, Truck, Clock, Crosshair, CheckCircle2, Trash2 } from 'lucide-react';
+import { updateReportStatus, deleteReport } from '../../utils/reportStorage';
 import { useState } from 'react';
 
 export default function ReportDetailsModal({ report, onClose, onUpdate }) {
   if (!report) return null;
 
   const [status, setStatus] = useState(report.status);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
   const handleStatusChange = async (e) => {
     const newStatus = e.target.value;
     setStatus(newStatus);
     await updateReportStatus(report.id, newStatus);
     if (onUpdate) onUpdate();
+  };
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    const success = await deleteReport(report.id);
+    if (success) {
+      onClose();
+      if (onUpdate) onUpdate();
+    } else {
+      alert("Failed to delete report.");
+      setIsDeleting(false);
+      setShowConfirmDelete(false);
+    }
   };
 
   const getStatusColor = (s) => {
@@ -23,6 +38,8 @@ export default function ReportDetailsModal({ report, onClose, onUpdate }) {
       default: return 'text-red-400 bg-red-500/10 border-red-500/20';
     }
   };
+
+  const isResolved = status === 'Resolved';
 
   return (
     <AnimatePresence>
@@ -41,7 +58,7 @@ export default function ReportDetailsModal({ report, onClose, onUpdate }) {
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative w-full max-w-4xl max-h-[90vh] glass-card overflow-hidden flex flex-col shadow-2xl shadow-blue-900/20"
+          className={`relative w-full max-w-4xl max-h-[90vh] glass-card overflow-hidden flex flex-col shadow-2xl shadow-blue-900/20 ${isResolved ? 'opacity-90' : ''}`}
         >
           {/* Header */}
           <div className="p-4 md:p-6 border-b border-slate-700/50 flex justify-between items-start bg-slate-900/50">
@@ -51,21 +68,63 @@ export default function ReportDetailsModal({ report, onClose, onUpdate }) {
                 <span className={`text-xs px-2 py-1 rounded border font-medium ${getStatusColor(status)}`}>
                   {status}
                 </span>
+                {isResolved && (
+                  <span className="text-xs font-bold text-emerald-400 flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> Task Completed
+                  </span>
+                )}
               </div>
               <p className="text-slate-400 flex items-center gap-2 text-sm">
                 <MapPin className="w-4 h-4" /> {report.address}
               </p>
             </div>
-            <button 
-              onClick={onClose}
-              className="p-2 bg-slate-800 hover:bg-slate-700 rounded-full transition-colors text-slate-400 hover:text-white"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => setShowConfirmDelete(true)}
+                className="p-2 bg-red-500/10 hover:bg-red-500/20 rounded-full transition-colors text-red-400"
+                title="Delete Report"
+              >
+                <Trash2 className="w-5 h-5" />
+              </button>
+              <button 
+                onClick={onClose}
+                className="p-2 bg-slate-800 hover:bg-slate-700 rounded-full transition-colors text-slate-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
+          {/* Delete Confirmation Overlay */}
+          {showConfirmDelete && (
+            <div className="absolute inset-0 z-10 bg-slate-950/90 flex items-center justify-center p-6 text-center">
+              <div className="max-w-sm">
+                <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Trash2 className="w-8 h-8 text-red-500" />
+                </div>
+                <h3 className="text-xl font-bold mb-2 text-white">Delete Report?</h3>
+                <p className="text-slate-400 mb-6 text-sm">This action cannot be undone. All detection data and records for this report will be permanently removed.</p>
+                <div className="flex items-center justify-center gap-3">
+                  <button 
+                    onClick={() => setShowConfirmDelete(false)}
+                    className="flex-1 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                    className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
+                  >
+                    {isDeleting ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div> : 'Confirm Delete'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Body */}
-          <div className="flex-1 overflow-y-auto p-4 md:p-6">
+          <div className={`flex-1 overflow-y-auto p-4 md:p-6 ${isResolved ? 'grayscale-[0.2]' : ''}`}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               
               {/* Image & Map info */}
