@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+
+# Database
+*.db
+
+# Environment variables
+.env
+
+# Uploads
+uploads/
+
+# AI datasets
+TACO/
+backend/app/ai/datasets/
+
+# YOLO weights
+*.pt
+
+# Node modules
+node_modules/
+
+# Logs
+*.log
+
+# VSCode
+.vscode/
+
+# Jupyter
+.ipynb_checkpoints/
