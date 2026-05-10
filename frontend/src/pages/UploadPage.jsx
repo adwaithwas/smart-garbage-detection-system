@@ -63,7 +63,18 @@ export default function UploadPage() {
       coveragePercentage: analysisData.coveragePercentage,
       totalObjects: analysisData.totalObjects,
       vehicleRecommended: getVehicleRecommendation(analysisData.severity).type,
-      detections: analysisData.detections,
+      hazardousCount:     analysisData.hazardousCount,
+      recyclableCount:    analysisData.recyclableCount,
+      garbageCount:       analysisData.garbageCount,
+      bottleCount:        analysisData.bottleCount,
+      plasticCount:       analysisData.plasticCount,
+      metalCount:         analysisData.metalCount,
+      paperCount:         analysisData.paperCount,
+      glassCount:         analysisData.glassCount,
+      bagCount:           analysisData.bagCount,
+      cigaretteCount:     analysisData.cigaretteCount,
+      mixedCount:         analysisData.mixedCount,
+      detections:         analysisData.detections,
       ...locationData
     };
     

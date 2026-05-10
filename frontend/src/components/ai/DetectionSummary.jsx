@@ -3,10 +3,21 @@ import { CheckCircle2, Crosshair, Recycle, Trash2, AlertTriangle } from 'lucide-
 
 // ─── Per-class config ──────────────────────────────────────────────────────────
 const CLASS_CONFIG = {
-  garbage:    { icon: Trash2,        colour: 'text-amber-400',   bg: 'bg-amber-500/10',   border: 'border-amber-500/20',   dot: 'bg-amber-400'   },
-  recyclable: { icon: Recycle,       colour: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', dot: 'bg-emerald-400' },
-  hazardous:  { icon: AlertTriangle, colour: 'text-red-400',     bg: 'bg-red-500/10',     border: 'border-red-500/20',     dot: 'bg-red-400'     },
-  default:    { icon: Trash2,        colour: 'text-slate-400',   bg: 'bg-slate-700/30',   border: 'border-slate-600/30',   dot: 'bg-slate-400'   },
+  // Recyclables
+  plastic_bottle:  { icon: Recycle,       colour: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', dot: 'bg-emerald-400' },
+  plastic:         { icon: Recycle,       colour: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', dot: 'bg-emerald-400' },
+  metal:           { icon: Recycle,       colour: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', dot: 'bg-emerald-400' },
+  paper_cardboard: { icon: Recycle,       colour: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', dot: 'bg-emerald-400' },
+  
+  // Hazardous / Risk
+  glass:           { icon: AlertTriangle, colour: 'text-red-400',     bg: 'bg-red-500/10',     border: 'border-red-500/20',     dot: 'bg-red-400'     },
+  
+  // General Garbage
+  garbage_bag:     { icon: Trash2,        colour: 'text-amber-400',   bg: 'bg-amber-500/10',   border: 'border-amber-500/20',   dot: 'bg-amber-400'   },
+  cigarette:       { icon: Trash2,        colour: 'text-slate-400',   bg: 'bg-slate-700/30',   border: 'border-slate-600/30',   dot: 'bg-slate-400'   },
+  mixed_trash:     { icon: Trash2,        colour: 'text-amber-400',   bg: 'bg-amber-500/10',   border: 'border-amber-500/20',   dot: 'bg-amber-400'   },
+  
+  default:         { icon: Trash2,        colour: 'text-slate-400',   bg: 'bg-slate-700/30',   border: 'border-slate-600/30',   dot: 'bg-slate-400'   },
 };
 
 function getConfig(category) {

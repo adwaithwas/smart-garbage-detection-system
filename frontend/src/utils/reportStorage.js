@@ -40,6 +40,14 @@ export const analyzeImage = async (imageFile) => {
     hazardousCount:      data.hazardous_count  ?? 0,
     recyclableCount:     data.recyclable_count ?? 0,
     garbageCount:        data.garbage_count    ?? 0,
+    bottleCount:         data.bottle_count     ?? 0,
+    plasticCount:        data.plastic_count    ?? 0,
+    metalCount:          data.metal_count      ?? 0,
+    paperCount:          data.paper_count      ?? 0,
+    glassCount:          data.glass_count      ?? 0,
+    bagCount:            data.bag_count        ?? 0,
+    cigaretteCount:      data.cigarette_count  ?? 0,
+    mixedCount:          data.mixed_count      ?? 0,
   };
 };
 
@@ -64,6 +72,14 @@ export const saveReport = async (reportData, imageFile) => {
       hazardous_count:     reportData.hazardousCount  ?? 0,
       recyclable_count:    reportData.recyclableCount ?? 0,
       garbage_count:       reportData.garbageCount    ?? 0,
+      bottle_count:        reportData.bottleCount     ?? 0,
+      plastic_count:       reportData.plasticCount    ?? 0,
+      metal_count:         reportData.metalCount      ?? 0,
+      paper_count:         reportData.paperCount      ?? 0,
+      glass_count:         reportData.glassCount      ?? 0,
+      bag_count:           reportData.bagCount        ?? 0,
+      cigarette_count:     reportData.cigaretteCount  ?? 0,
+      mixed_count:         reportData.mixedCount      ?? 0,
     };
 
     // Remove old camelCase keys
@@ -114,6 +130,14 @@ export const getReports = async () => {
       hazardousCount:   r.hazardous_count  ?? 0,
       recyclableCount:  r.recyclable_count ?? 0,
       garbageCount:     r.garbage_count    ?? 0,
+      bottleCount:      r.bottle_count     ?? 0,
+      plasticCount:     r.plastic_count    ?? 0,
+      metalCount:       r.metal_count      ?? 0,
+      paperCount:       r.paper_count      ?? 0,
+      glassCount:       r.glass_count      ?? 0,
+      bagCount:         r.bag_count        ?? 0,
+      cigaretteCount:   r.cigarette_count  ?? 0,
+      mixedCount:       r.mixed_count      ?? 0,
     }));
   } catch (error) {
     console.error("Error reading reports:", error);

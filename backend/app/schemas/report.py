@@ -26,6 +26,14 @@ class ReportCreate(BaseModel):
     coverage_percentage: float
     total_objects: int
     vehicle_recommended: str
+    bottle_count: int = 0
+    plastic_count: int = 0
+    metal_count: int = 0
+    paper_count: int = 0
+    glass_count: int = 0
+    bag_count: int = 0
+    cigarette_count: int = 0
+    mixed_count: int = 0
     hazardous_count: int = 0
     recyclable_count: int = 0
     garbage_count: int = 0
