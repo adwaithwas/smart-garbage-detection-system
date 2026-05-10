@@ -1,4 +1,4 @@
---extra-index-url https://download.pytorch.org/whl/cu124
+--extra-index-url https://download.pytorch.org/whl/cu118
 
 fastapi>=0.115.0
 uvicorn>=0.32.0
@@ -8,8 +8,8 @@ pydantic-settings>=2.5.0
 python-multipart>=0.0.12
 
 ultralytics
-torch>=2.5.0
-torchvision
+torch==2.7.1+cu118
+torchvision==0.22.1+cu118
 opencv-python
 numpy>=1.26.0
 pillow

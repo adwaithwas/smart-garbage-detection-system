@@ -26,6 +26,9 @@ class ReportCreate(BaseModel):
     coverage_percentage: float
     total_objects: int
     vehicle_recommended: str
+    hazardous_count: int = 0
+    recyclable_count: int = 0
+    garbage_count: int = 0
     detections: List[DetectionSchema]
 
 class ReportResponse(ReportCreate):

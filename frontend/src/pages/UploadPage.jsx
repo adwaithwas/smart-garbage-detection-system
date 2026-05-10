@@ -179,9 +179,12 @@ export default function UploadPage() {
               >
                 <LocationStatusCard onLocationFound={setLocationData} />
 
-                <SeverityCard 
-                  severity={analysisData.severity} 
-                  coveragePercentage={analysisData.coveragePercentage} 
+                <SeverityCard
+                  severity={analysisData.severity}
+                  coveragePercentage={analysisData.coveragePercentage}
+                  hazardousCount={analysisData.hazardousCount ?? 0}
+                  recyclableCount={analysisData.recyclableCount ?? 0}
+                  garbageCount={analysisData.garbageCount ?? 0}
                 />
                 
                 <VehicleRecommendation 

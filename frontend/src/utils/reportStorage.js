@@ -33,10 +33,13 @@ export const analyzeImage = async (imageFile) => {
   const data = await response.json();
   return {
     ...data,
-    coveragePercentage: data.coverage_percentage,
-    totalObjects: data.total_objects,
-    vehicleRecommended: data.vehicle_recommended,
-    annotatedImageUrl: data.annotated_image_url
+    coveragePercentage:  data.coverage_percentage,
+    totalObjects:        data.total_objects,
+    vehicleRecommended:  data.vehicle_recommended,
+    annotatedImageUrl:   data.annotated_image_url,
+    hazardousCount:      data.hazardous_count  ?? 0,
+    recyclableCount:     data.recyclable_count ?? 0,
+    garbageCount:        data.garbage_count    ?? 0,
   };
 };
 
@@ -53,11 +56,14 @@ export const saveReport = async (reportData, imageFile) => {
 
     const payload = {
       ...reportData,
-      image_url: imageUrl,
+      image_url:           imageUrl,
       // Map frontend camelCase to backend snake_case
       coverage_percentage: reportData.coveragePercentage,
-      total_objects: reportData.totalObjects,
-      vehicle_recommended: reportData.vehicleRecommended
+      total_objects:       reportData.totalObjects,
+      vehicle_recommended: reportData.vehicleRecommended,
+      hazardous_count:     reportData.hazardousCount  ?? 0,
+      recyclable_count:    reportData.recyclableCount ?? 0,
+      garbage_count:       reportData.garbageCount    ?? 0,
     };
 
     // Remove old camelCase keys
@@ -65,9 +71,13 @@ export const saveReport = async (reportData, imageFile) => {
     delete payload.coveragePercentage;
     delete payload.totalObjects;
     delete payload.vehicleRecommended;
+    delete payload.hazardousCount;
+    delete payload.recyclableCount;
+    delete payload.garbageCount;
+    delete payload.annotatedImageUrl;
     delete payload.timestamp; // Backend sets this
-    delete payload.status; // Backend sets this
-    delete payload.id; // Backend generates this
+    delete payload.status;    // Backend sets this
+    delete payload.id;        // Backend generates this
 
     const response = await fetch(`${API_BASE_URL}/reports/`, {
       method: 'POST',
@@ -97,10 +107,13 @@ export const getReports = async () => {
     // Map backend snake_case back to frontend camelCase for existing UI compatibility
     return data.map(r => ({
       ...r,
-      imageUrl: r.image_url,
+      imageUrl:         r.image_url,
       coveragePercentage: r.coverage_percentage,
-      totalObjects: r.total_objects,
-      vehicleRecommended: r.vehicle_recommended
+      totalObjects:     r.total_objects,
+      vehicleRecommended: r.vehicle_recommended,
+      hazardousCount:   r.hazardous_count  ?? 0,
+      recyclableCount:  r.recyclable_count ?? 0,
+      garbageCount:     r.garbage_count    ?? 0,
     }));
   } catch (error) {
     console.error("Error reading reports:", error);

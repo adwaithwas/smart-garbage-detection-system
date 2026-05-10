@@ -60,7 +60,10 @@ def create_report(report: ReportCreate, db: Session = Depends(get_db)):
         severity=report.severity,
         coverage_percentage=report.coverage_percentage,
         total_objects=report.total_objects,
-        vehicle_recommended=report.vehicle_recommended
+        vehicle_recommended=report.vehicle_recommended,
+        hazardous_count=report.hazardous_count,
+        recyclable_count=report.recyclable_count,
+        garbage_count=report.garbage_count,
     )
     db.add(db_report)
     db.commit()

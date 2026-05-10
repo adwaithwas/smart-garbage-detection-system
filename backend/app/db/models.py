@@ -17,6 +17,9 @@ class Report(Base):
     coverage_percentage = Column(Float, nullable=False)
     total_objects = Column(Integer, nullable=False)
     vehicle_recommended = Column(String, nullable=False)
+    hazardous_count  = Column(Integer, default=0)
+    recyclable_count = Column(Integer, default=0)
+    garbage_count    = Column(Integer, default=0)
     status = Column(String, default="Pending")
     timestamp = Column(DateTime, default=datetime.utcnow)
 

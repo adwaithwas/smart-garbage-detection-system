@@ -1,43 +1,78 @@
+"""
+CleanSight AI — Model Loader
+============================
+Singleton loader for the YOLOv8 garbage detection model.
+Priority: garbage_best_v3.pt > garbage_best_v2.pt > garbage_best.pt > yolov8n.pt
+
+Prints a clear GPU/device banner on first load.
+"""
 import torch
-from ultralytics import YOLO
 import logging
-import os
+from ultralytics import YOLO
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
+WEIGHTS_DIR = Path(__file__).resolve().parent / "weights"
+
+# Priority list — newest custom model first
+CANDIDATE_WEIGHTS = [
+    WEIGHTS_DIR / "garbage_best_v4.pt",
+    WEIGHTS_DIR / "garbage_best_v3.pt",
+    WEIGHTS_DIR / "garbage_best_v2.pt",
+    WEIGHTS_DIR / "garbage_best.pt",
+]
+
+
+def _resolve_model_path() -> str:
+    for candidate in CANDIDATE_WEIGHTS:
+        if candidate.exists():
+            return str(candidate)
+    return "yolov8n.pt"   # absolute fallback
+
+
+def _print_device_banner(device: str, model_path: str):
+    sep = "=" * 56
+    logger.info(sep)
+    logger.info("  CleanSight AI — Inference Engine")
+    logger.info(sep)
+    if torch.cuda.is_available():
+        dev = torch.cuda.get_device_properties(0)
+        logger.info(f"  System Compute Device : CUDA (GPU)")
+        logger.info(f"  GPU                   : {dev.name}")
+        logger.info(f"  VRAM                  : {dev.total_memory / 1e9:.1f} GB")
+    else:
+        logger.info("  System Compute Device : CPU")
+    logger.info(f"  Model weights         : {Path(model_path).name}")
+    logger.info(sep)
+
+
 class ModelLoader:
-    _model = None
+    _model: YOLO | None = None
+    _device: str = "cpu"
 
     @classmethod
-    def get_model(cls):
+    def get_model(cls) -> YOLO:
         if cls._model is None:
-            # Check for GPU
-            device = "cuda" if torch.cuda.is_available() else "cpu"
-            
-            # Try loading custom garbage model first
-            weights_dir = Path(__file__).parent / "weights"
-            custom_model_path = weights_dir / "garbage_best.pt"
-            
-            if custom_model_path.exists():
-                logger.info(f"Loading custom garbage model from {custom_model_path} on device: {device}")
-                model_path = str(custom_model_path)
-            else:
-                logger.info(f"Custom model not found. Falling back to YOLOv8n on device: {device}")
-                model_path = 'yolov8n.pt'
-            
-            # Load the model
-            try:
-                cls._model = YOLO(model_path)
-                cls._model.to(device)
-            except Exception as e:
-                logger.error(f"Failed to load YOLO model: {str(e)}")
-                raise e
-                
+            cls._device = "cuda:0" if torch.cuda.is_available() else "cpu"
+            model_path  = _resolve_model_path()
+
+            _print_device_banner(cls._device, model_path)
+            logger.info(f"Loading model: {model_path}")
+
+            cls._model = YOLO(model_path)
+            cls._model.to(cls._device)
+
+            logger.info("Model loaded and ready.")
         return cls._model
 
-# Pre-load on import
+    @classmethod
+    def get_device(cls) -> str:
+        return cls._device
+
+
+# Eagerly pre-load on import so the first API request is fast
 try:
     ModelLoader.get_model()
-except Exception:
-    pass
+except Exception as exc:
+    logger.error(f"Failed to pre-load model: {exc}")
