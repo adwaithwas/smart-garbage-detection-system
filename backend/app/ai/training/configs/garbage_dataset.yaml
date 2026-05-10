@@ -1,0 +1,17 @@
+# CleanSight AI Custom Garbage Dataset Config
+# Update 'path' to the absolute path of your dataset before training.
+
+path: ../../datasets/processed/taco_subset # dataset root dir
+train: images/train  # train images (relative to 'path')
+val: images/val      # val images (relative to 'path')
+test: images/test    # test images (optional)
+
+# Classes
+names:
+  0: Bottle
+  1: Cup
+  2: Bag
+  3: Container
+  4: Wrapper
+  5: Can
+  6: Cardboard

@@ -1,0 +1,16 @@
+path: C:\Users\PC\Desktop\gbg\backend\app\ai\datasets
+train: train/images
+val: valid/images
+test: test/images
+nc: 10
+names:
+- plastic_bottle
+- plastic_bag
+- food_wrapper
+- cardboard
+- metal_can
+- glass_bottle
+- organic_waste
+- garbage_bag
+- e_waste
+- mixed_trash

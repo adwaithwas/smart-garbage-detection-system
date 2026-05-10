@@ -9,6 +9,7 @@ class Report(Base):
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     image_url = Column(String, nullable=False)
+    annotated_image_url = Column(String, nullable=True)
     latitude = Column(Float, nullable=False)
     longitude = Column(Float, nullable=False)
     address = Column(String, nullable=True)

@@ -18,6 +18,7 @@ class DetectionResponse(DetectionSchema):
 
 class ReportCreate(BaseModel):
     image_url: str
+    annotated_image_url: Optional[str] = None
     latitude: float
     longitude: float
     address: str

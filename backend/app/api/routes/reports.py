@@ -2,22 +2,58 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 from typing import List
 import json
+import os
+import cv2
 from app.db.database import get_db
 from app.db.models import Report, Detection
 from app.schemas.report import ReportCreate, ReportResponse, ReportStatusUpdate
 from app.services.storage_service import StorageService
+from app.ai.inference_service import InferenceService
+from app.ai.annotation_service import AnnotationService
+from app.ai.severity_service import SeverityService
 
 router = APIRouter()
 
+@router.post("/analyze")
+async def analyze_image(file: UploadFile = File(...)):
+    # 1. Save uploaded image
+    image_url, local_path = await StorageService.upload_image(file)
+    
+    # 2. Get image dimensions
+    img = cv2.imread(local_path)
+    if img is None:
+        raise HTTPException(status_code=400, detail="Invalid image file")
+    height, width, _ = img.shape
+    
+    # 3. Run Inference
+    detections = InferenceService.run_inference(local_path)
+    
+    # 4. Analyze Severity
+    analysis = SeverityService.analyze(width, height, detections)
+    
+    # 5. Annotate Image
+    annotated_filename = f"annotated_{os.path.basename(local_path)}"
+    annotated_local_path = os.path.join("uploads", annotated_filename)
+    AnnotationService.annotate_image(local_path, detections, annotated_local_path)
+    annotated_url = f"http://localhost:8000/uploads/{annotated_filename}"
+    
+    return {
+        "image_url": image_url,
+        "annotated_image_url": annotated_url,
+        "detections": detections,
+        **analysis
+    }
+
 @router.post("/upload", response_model=dict)
 async def upload_image(file: UploadFile = File(...)):
-    url = await StorageService.upload_image(file)
+    url, _ = await StorageService.upload_image(file)
     return {"image_url": url}
 
 @router.post("/", response_model=ReportResponse)
 def create_report(report: ReportCreate, db: Session = Depends(get_db)):
     db_report = Report(
         image_url=report.image_url,
+        annotated_image_url=report.annotated_image_url,
         latitude=report.latitude,
         longitude=report.longitude,
         address=report.address,

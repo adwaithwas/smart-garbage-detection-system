@@ -1,7 +1,15 @@
-fastapi==0.104.1
-uvicorn==0.24.0
-sqlalchemy==2.0.23
-pydantic==2.5.2
-pydantic-settings==2.1.0
-python-multipart==0.0.6
-psycopg2-binary==2.9.9
+--extra-index-url https://download.pytorch.org/whl/cu124
+
+fastapi>=0.115.0
+uvicorn>=0.32.0
+sqlalchemy>=2.0.36
+pydantic>=2.9.0
+pydantic-settings>=2.5.0
+python-multipart>=0.0.12
+
+ultralytics
+torch>=2.5.0
+torchvision
+opencv-python
+numpy>=1.26.0
+pillow
